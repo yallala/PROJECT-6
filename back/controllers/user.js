@@ -54,10 +54,14 @@ exports.login = (req, res, next) => {
               .json({ message: "Incorrect email or password!" });
           }
           /* If the password is valid, respond with a 200 status and generate a token */
+          const jwtTokenSecret = process.env.JWT_TOKEN;
+
           res.status(200).json({
             userId: user._id, // Return the user's ID
             /* Generate a JWT (JSON Web Token) that includes the userId and expires in 24 hours */
-            token: jwt.sign({ userId: user._id }, "RANDOM_TOKEN_SECRET", {
+            
+
+            token: jwt.sign({ userId: user._id }, jwtTokenSecret, {
               expiresIn: "24h",
             }),
           });
