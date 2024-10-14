@@ -57,7 +57,7 @@ app.use("/images", express.static(path.join(__dirname, "images")));
  * The '/api/auth' route handles requests like user authentication (login, signup).
  */
 app.use("/api/auth", userRoutes);
-// app.use("/api/sauces", sauceRoutes);
+app.use("/api/sauces", sauceRoutes);
 
 
 /* EXPORT the express application to be used in other files (like the server) */
