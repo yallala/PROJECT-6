@@ -6,7 +6,6 @@ const { error } = require("console");
 
 
 exports.createSauce = (req, res, next) => {
-  // console.log(req.body.sauce);
   const sauceObject = JSON.parse(req.body.sauce);
   delete sauceObject._id;
   const sauce = new Sauce({
@@ -60,7 +59,6 @@ exports.deleteSauce = (req, res, next) => {
 
 exports.modifySauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
-    // console.log(req.file);
     const sauceObject = req.file ?
       {
         ...JSON.parse(req.body.sauce),
@@ -69,7 +67,6 @@ exports.modifySauce = (req, res, next) => {
       }
       :
       { ...req.body };
-    // console.log(sauceObject);
 
     if (sauceObject.userId && sauceObject.userId !== sauce.userId) {
       res.status(401).json({ error: "Unauthorized modification!" });
