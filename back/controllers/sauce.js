@@ -57,97 +57,38 @@ exports.deleteSauce = (req, res, next) => {
     .catch((error) => res.status(400).json({ error }));
 };
 
-// exports.modifySauce = (req, res, next) => {
-//   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
-//     const sauceObject = req.file ?
-//       {
-//         ...JSON.parse(req.body.sauce),
-//         imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename
-//           }`,
-//       }
-//       :
-//       { ...req.body };
-
-//     if (sauceObject.userId && sauceObject.userId !== sauce.userId) {
-//       res.status(401).json({ error: "Unauthorized modification!" });
-//     }
-
-//     if (!sauce) {
-//       return res.status(404).json({ error: "Sauce not found!" });
-//     }
-
-//     if (req.file) {
-//       Sauce.findOne({ _id: req.params.id })
-//         .then((sauce) => {
-//           const filename = sauce.imageUrl.split("/images/")[1];
-//           fs.unlink(`images/${filename}`, (error) => {
-//             if (error) {
-//               throw new Error(error);
-//             }
-//           });
-//         })
-//         .catch((error) => res.status(400).json({ error: error.message }));
-//     }
-
-//     Sauce.updateOne(
-//       { _id: req.params.id },
-//       { ...sauceObject, _id: req.params.id }
-//     )
-//       .then(() =>
-//         res.status(200).json({ message: "Sauce updated successfully!" })
-//       )
-//       .catch((error) => res.status(400).json({ error }));
-//   });
-// };
-
-
-
 exports.modifySauce = (req, res, next) => {
-  // Check if a new file (image) is uploaded
   const sauceObject = req.file
     ? {
-        ...JSON.parse(req.body.sauce),
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
-      }
-    : { ...req.body };  // If no file is uploaded, just modify the text fields
+      ...JSON.parse(req.body.sauce),
+      imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
+    }
+    : { ...req.body };
 
   Sauce.findOne({ _id: req.params.id })
     .then((sauce) => {
-      // Check if the user is authorized to modify the sauce
       if (sauce.userId !== req.auth.userId) {
         return res.status(403).json({ message: "Unauthorized request" });
       }
 
-      // If a new file (image) is uploaded, delete the old image
-      // if (req.file) {
-      //   const filename = sauce.imageUrl.split("/images/")[1];  // Extract the old image filename
-      //   fs.unlink(`images/${filename}`, (err) => {
-      //     if (err) throw new Error(err);  // Handle file deletion error
-      //   });
-      // }
+      if (req.file && sauce.imageUrl) {
+        const filename = sauce.imageUrl.split("/images/")[1];
 
-      if (req.file && sauce.imageUrl) {  // Ensure that an image exists before trying to delete it
-        const filename = sauce.imageUrl.split("/images/")[1];  // Extract the old image filename
-      
-        if (filename) {  // Check if the filename is valid (not undefined)
+        if (filename) {
           fs.unlink(`images/${filename}`, (err) => {
-            if (err && err.code !== 'ENOENT') {  // Only throw an error if it's not 'file not found'
-              throw new Error(err);  
+            if (err && err.code !== 'ENOENT') {
+              throw new Error(err);
             }
           });
         }
       }
-      
-      // Proceed with the update
+
       Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
         .then(() => res.status(200).json({ message: "Sauce updated!" }))
         .catch((error) => res.status(400).json({ error }));
     })
     .catch((error) => res.status(500).json({ error: error.message }));
 };
-
-
-
 
 exports.likeASauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id })
